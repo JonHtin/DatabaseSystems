@@ -112,4 +112,12 @@ WHERE DepartmentName = 'Marketing';
 
 --18. Find the names of employees who make 40 per cent less than the average salary. 
 SELECT EmployeeName FROM Employee
-WHERE EmployeeSalary <= (SELECT AVG(EmployeeSalary) FROM Employee)
+WHERE EmployeeSalary <= (SELECT AVG(EmployeeSalary)*0.60 FROM Employee)
+
+--19.
+
+--20. Find the names of suppliers that do not supply compasses or geo positioning systems. 
+SELECT SupplierName FROM Supplier 
+WHERE SupplierID NOT IN (
+	SELECT DISTINCT SupplierID FROM Supplier NATURAL JOIN Delivery NATURAL JOIN Item
+    WHERE ItemName = 'Geopositioning system' OR ItemName = 'Compass');
