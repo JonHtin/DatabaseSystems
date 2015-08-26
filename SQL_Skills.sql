@@ -1,3 +1,5 @@
+/*by Kyaw Min Htin (Jon Htin)
+khtin@student.unimelb.edu.au for queries*/
 
 --2. Find the names of brown items sold by the Recreation department.
 Select * FROM Department NATURAL JOIN Sale NATURAL JOIN Item
@@ -222,3 +224,18 @@ HAVING Count(Lowlvl.EmployeeID) = 1;
 --36. List the number of employees in each department.
 SELECT DepartmentName, COUNT(EmployeeID) From Department NATURAL JOIN Employee
 GROUP BY DepartmentID;
+
+--37. Whom does Todd manage?
+SELECT Lowlvl.EmployeeName 
+FROM Employee Lowlvl INNER JOIN Employee Boss ON Lowlvl.BossID = Boss.EmployeeID
+WHERE Boss.EmployeeName = 'Todd';
+
+--38. Find the name of Sophie's Boss
+SELECT Boss.EmployeeName 
+FROM Employee Lowlvl INNER JOIN Employee Boss ON Lowlvl.BossID = Boss.EmployeeID
+WHERE Lowlvl.EmployeeName = 'Sophie';
+
+--39. Find the name of 
+
+/*by Kyaw Min Htin (Jon Htin)
+khtin@student.unimelb.edu.au for queries*/
