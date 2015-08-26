@@ -114,10 +114,37 @@ WHERE DepartmentName = 'Marketing';
 SELECT EmployeeName FROM Employee
 WHERE EmployeeSalary <= (SELECT AVG(EmployeeSalary)*0.60 FROM Employee)
 
---19.
+--19. Find the names of employees with a salary greater than the minimum salary paid to a manager.
+SELECT EmployeeName FROM Employee
+WHERE EmployeeSalary > (
+	SELECT MIN(EmployeeSalary) FROM Employee
+	WHERE EmployeeID IN (SELECT Distinct BossID FROM Employee)
+    );
 
 --20. Find the names of suppliers that do not supply compasses or geo positioning systems. 
 SELECT SupplierName FROM Supplier 
 WHERE SupplierID NOT IN (
 	SELECT DISTINCT SupplierID FROM Supplier NATURAL JOIN Delivery NATURAL JOIN Item
     WHERE ItemName = 'Geopositioning system' OR ItemName = 'Compass');
+
+--21. Find the number of employees with a salary under $15,000.
+SELECT COUNT(EmployeeID) FROM Employee
+WHERE EmployeeSalary < 15000;
+
+--22. Find the number of items of type C sold by the departments on the third floor. 
+SELECT COUNT(DISTINCT ItemID) FROM Item NATURAL JOIN Sale NATURAL JOIN Department
+WHERE ItemType = 'C' AND DepartmentFloor = 3;
+
+--23. Find the number of units sold of each item.
+SELECT ItemName, SUM(SaleQTY) AS SaleTotal FROM Item NATURAL JOIN Sale
+GROUP BY ItemID;
+
+--24. Find the khaki items delivered by all suppliers.
+-- this is really ambigious so I'm going to skip it for now
+
+--25. Find any suppliers that deliver no more than two unique items. List the suppliers in alphabetical order.
+SELECT SupplierName, COUNT(DISTINCT ItemID) FROM Supplier NATURAL JOIN Delivery
+GROUP BY SupplierID
+HAVING COUNT(DISTINCT ItemID) <= 2
+ORDER BY SupplierName;
+
