@@ -107,8 +107,10 @@ HAVING COUNT(DISTINCT DepartmentID) IN
 	);
 
 --17. Find the name of the highest-paid employee in the Marketing department.
-SELECT EmployeeName, MAX(EmployeeSalary) FROM Employee INNER JOIN Department
-WHERE DepartmentName = 'Marketing';
+SELECT EmployeeName FROM Employee NATURAL JOIN Department
+WHERE DepartmentName = 'Marketing' AND EmployeeSalary = (
+	SELECT MAX(EmployeeSalary) FROM Employee NATURAL JOIN Department
+		WHERE DepartmentName = 'Marketing');
 
 --18. Find the names of employees who make 40 per cent less than the average salary. 
 SELECT EmployeeName FROM Employee
@@ -235,7 +237,31 @@ SELECT Boss.EmployeeName
 FROM Employee Lowlvl INNER JOIN Employee Boss ON Lowlvl.BossID = Boss.EmployeeID
 WHERE Lowlvl.EmployeeName = 'Sophie';
 
---39. Find the name of 
+--39. List the names of each manager and their employees arranged by manager's 
+--name and employee's name within manager. 
+SELECT Boss.EmployeeName AS Manager, Lowlvl.EmployeeName AS Employee
+FROM Employee Lowlvl INNER JOIN Employee Boss ON Lowlvl.BossID = Boss.EmployeeID
+ORDER BY Boss.EmployeeName, Lowlvl.EmployeeName;
+
+--40. Lowest paid employee
+SELECT EmployeeName FROM Employee
+WHERE EmployeeSalary = (SELECT MIN(EmployeeSalary) FROM Employee);
+
+--41. List the names of employees who earn less than the minimum salary of the Marketing department. 
+SELECT EmployeeName FROM Employee NATURAL JOIN Department
+WHERE EmployeeSalary < (
+	SELECT MIN(EmployeeSalary) FROM Employee NATURAL JOIN Department
+		WHERE DepartmentName = 'Marketing');
+
+--42. List the department and the item where the department is the only seller of that item. 
+SELECT DepartmentName, ItemName FROM Item NATURAL JOIN Sale NATURAL JOIN Department
+GROUP BY ItemID
+HAVING COUNT(DISTINCT DepartmentID) = 1;
+
+--43. Which department has the highest average salary?
+/* Note uses DepAvgsal view created in question 30. Look at solution 30 for how to create it */
+SELECT DepartmentName From Department NATURAL JOIN DepAvgsal
+WHERE DepAvgSal = (SELECT MAX(DepAvgSal) From DepAvgsal);
 
 /*by Kyaw Min Htin (Jon Htin)
 khtin@student.unimelb.edu.au for queries*/
