@@ -93,12 +93,10 @@ WHERE ItemID NOT IN
 	(Select DISTINCT ItemID FROM Sale);
 
 --16. Find the items delivered to all departments except Administration departments (Management, Marketing, Personnel, Accounting, Purchasing). 
+/*VERSION 2*/
 SELECT ItemID, ItemName FROM Item NATURAL JOIN Delivery NATURAL JOIN Department
-WHERE ItemID IN
-	(SELECT DISTINCT ItemID FROM Delivery NATURAL JOIN Department
-		WHERE DepartmentName NOT IN ('Management', 'Marketing', 'Personnel',  
+WHERE DepartmentName NOT IN ('Management', 'Marketing', 'Personnel',  
 								'Accounting', 'Purchasing')
-	)
 GROUP BY ItemID
 HAVING COUNT(DISTINCT DepartmentID) IN
 	(SELECT COUNT(DISTINCT DepartmentID) FROM Department
@@ -140,7 +138,14 @@ SELECT ItemName, SUM(SaleQTY) AS SaleTotal FROM Item NATURAL JOIN Sale
 GROUP BY ItemID;
 
 --24. Find the khaki items delivered by all suppliers.
--- this is really ambigious so I'm going to skip it for now
+/* Uses HAVING instead of nesting query in where
+-Kyaw Min Htin (Jon Htin)*/
+
+SELECT ItemName FROM Supplier NATURAL JOIN Delivery NATURAL JOIN Item
+WHERE ItemColour = 'Khaki'
+GROUP BY ItemID
+HAVING COUNT(DISTINCT SupplierID) IN (SELECT COUNT(SupplierID) FROM Supplier);
+
 
 --25. Find any suppliers that deliver no more than two unique items. List the suppliers in alphabetical order.
 SELECT SupplierName, COUNT(DISTINCT ItemID) FROM Supplier NATURAL JOIN Delivery
@@ -148,3 +153,72 @@ GROUP BY SupplierID
 HAVING COUNT(DISTINCT ItemID) <= 2
 ORDER BY SupplierName;
 
+--26. Find the suppliers that deliver to all departments. 
+-- Don't forget to exclude the administrative departments, which don't sell items. 
+/* WHERE statement added so that suppliers that only deliveries to non-admin
+departments are counted */
+
+SELECT SupplierName FROM Supplier NATURAL JOIN Delivery NATURAL JOIN Department
+WHERE DepartmentName NOT IN ('Management', 'Marketing', 'Personnel',  
+								'Accounting', 'Purchasing')
+GROUP BY SupplierID
+HAVING COUNT(DISTINCT DepartmentID) IN
+	(SELECT COUNT(DISTINCT DepartmentID) FROM Department
+		WHERE DepartmentName NOT IN ('Management', 'Marketing', 'Personnel',  
+								'Accounting', 'Purchasing')
+	);
+
+--27. Find the names of suppliers that have never delivered a compass. 
+SELECT SupplierName FROM Supplier
+WHERE SupplierID NOT IN
+	(SELECT SupplierID FROM Delivery NATURAL JOIN Item
+	WHERE ItemName = 'Compass');
+
+--28. Find, for each department, its floor and the average salary in the department. 
+SELECT DepartmentName, DepartmentFloor, AVG(EmployeeSalary) FROM Department NATURAL JOIN Employee
+GROUP BY DepartmentID;
+
+--29 If Nancy's boss has a boss, who is it?
+SELECT Superboss.EmployeeName FROM Employee Emp INNER JOIN Employee Boss ON Emp.BossID = Boss.EmployeeID
+    INNER JOIN Employee Superboss ON Boss.BossID = Superboss.EmployeeID
+	WHERE Emp.EmployeeName = 'Nancy'
+
+--30 List each employee and the difference between his or her salary and the average salary of his or her department. 
+CREATE VIEW DepAvgsal(DepartmentID, DepAvgsal) AS
+	SELECT DepartmentID, AVG(EmployeeSalary) AS DepAvgSal FROM Department NATURAL JOIN Employee
+    GROUP BY DepartmentID;
+
+SELECT EmployeeName, FORMAT(EmployeeSalary-DepAvgSal, 2) AS SalDepAvgDifference
+FROM Employee NATURAL JOIN DepAvgsal;
+
+--31. List the departments on the second floor that contain more than one employee.
+SELECT DepartmentName FROM Department NATURAL JOIN Employee
+WHERE DepartmentFloor = 2
+GROUP BY DepartmentID
+HAVING COUNT(EmployeeID)>1;
+
+--32. List the departments on the second floor. 
+SELECT DepartmentName FROM Department
+WHERE DepartmentFloor = 2;
+
+--33. List the names of employees who earn more than the average salary of employees 
+--in the Accounting department.
+SELECT EmployeeName FROM Employee
+WHERE EmployeeSalary > (
+	SELECT AVG(EmployeeSalary) FROM Employee NATURAL JOIN Department
+	WHERE DepartmentName = 'Accounting');
+
+--34. List the names of items delivered by each supplier. 
+--Arrange the report by supplier name, and within supplier name, list the items in alphabetical order. 
+SELECT SupplierName, ItemName FROM Supplier NATURAL JOIN Delivery NATURAL JOIN Item
+ORDER BY SupplierName, ItemName;
+
+--35. List the names of managers who supervise only one person.
+SELECT Boss.EmployeeName, Count(Lowlvl.EmployeeID) 
+FROM Employee Lowlvl INNER JOIN Employee Boss ON Lowlvl.BossID = Boss.EmployeeID
+GROUP BY Lowlvl.BossID
+HAVING Count(Lowlvl.EmployeeID) = 1;
+
+--36. List the number of employees in each department.
+SELECT DepartmentName, COUNT(EmployeeID) From Department NATURAL JOIN Employee
+GROUP BY DepartmentID;
