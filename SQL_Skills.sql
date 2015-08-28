@@ -162,15 +162,7 @@ ORDER BY SupplierName;
 /* WHERE statement added so that suppliers that only deliveries to non-admin
 departments are counted */
 
-SELECT SupplierName FROM Supplier NATURAL JOIN Delivery NATURAL JOIN Department
-WHERE DepartmentName NOT IN ('Management', 'Marketing', 'Personnel',  
-								'Accounting', 'Purchasing')
-GROUP BY SupplierID
-HAVING COUNT(DISTINCT DepartmentID) IN
-	(SELECT COUNT(DISTINCT DepartmentID) FROM Department
-		WHERE DepartmentName NOT IN ('Management', 'Marketing', 'Personnel',  
-								'Accounting', 'Purchasing')
-	);
+select SupplierName from Supplier natural join Delivery group by Delivery.SupplierID having count(distinct Delivery.DepartmentID) = ((select count(*) from Department) - 5);
 
 --27. Find the names of suppliers that have never delivered a compass. 
 SELECT SupplierName FROM Supplier
